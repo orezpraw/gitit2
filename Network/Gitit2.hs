@@ -294,8 +294,9 @@ getDeleteR page = do
                      , pgTabs = []
                      }
     [whamlet|
-      <h1>#{page}</h1>
-      <div #deleteform>
+      <header>
+        <h1>#{page}
+      <section #deleteform>
         <form method=post action=@{toMaster $ DeleteR page}>
           <p>_{MsgConfirmDelete page}
           <input type=text class=hidden name=fileToDelete value=#{fileToDelete}>
@@ -702,12 +703,12 @@ showEditForm page route enctype form =
     [whamlet|
       <header>
         <h1>#{page}
-      <div #editform>
+      <section #editform>
         <form method=post action=@{route} enctype=#{enctype}>
           ^{form}
           <input type=submit>
           <input type=button onclick="updatePreviewPane()" value="Preview">
-      <div #previewpane>
+      <section #previewpane>
     |]
 
 postUpdateR :: HasGitit master
@@ -1135,8 +1136,9 @@ showUploadForm enctype form = do
         });
     |]
     [whamlet|
-      <h1>_{MsgUploadFile}</h1>
-      <div #uploadform>
+      <header>
+        <h1>_{MsgUploadFile}
+      <section #uploadform>
         <form method=post action=@{toMaster UploadR} enctype=#{enctype}>
           ^{form}
           <input type=submit>

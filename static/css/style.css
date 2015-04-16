@@ -179,9 +179,33 @@ article section {
     margin: 1em;
 }
 
+article section label {
+    display: block;
+    font-size: 150%;
+}
+
+article section textarea {
+    width: 90%;
+    margin: 1em;
+    height: 40em;
+}
+
+article section input {
+    margin: 1em;
+}
+
+article section input#hident2 {
+    width: 90%;
+    margin: 1em;
+}
+
 article footer {
     margin: 1em;
     margin-left: 0;
+}
+
+article h1 {
+    font-size: 200%;
 }
 
 article header h1 {
