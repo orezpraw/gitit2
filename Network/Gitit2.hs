@@ -101,77 +101,43 @@ makeDefaultPage layout content = do
     atomLink (toMaster AtomSiteR) "Atom feed for the wiki"
     toWidget $ [lucius|input.hidden { display: none; } |]
     [whamlet|
-    <div .container>
-     <div .row>
-       <div #sidebar .col-md-2>
-         <div #logo>
-           <a href=@{toMaster HomeR}><img src=@{logoRoute} alt=logo></a>
-       <div #maincol .col-md-8>
-         <div #userpane>
-         <div .navbar .navbar-default role="navigation">
-             <div .container-fluid>
-               <div .navbar-header>
-                  <button type="button" .navbar-toggle data-toggle="collapse" data-target="#navbar">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                  <a class="navbar-brand" href="#">Gitit</a>
-               <ul .nav .navbar-nav #navbar>
-                 $if pgSiteNav layout
-                   <li .dropdown .navbar-left>
-                       <a href="#" .dropdown-toggle data-toggle="dropdown">
-                         Site
-                         <b .caret>
-                       <ul .dropdown-menu>
-                         <li><a href=@{toMaster HomeR}>_{MsgFrontPage}</a>
-                         <li><a href=@{toMaster IndexBaseR}>_{MsgDirectory}</a>
-                         <li><a href=@{toMaster CategoriesR}>_{MsgCategories}</a>
-                         <li><a href=@{toMaster RandomR}>_{MsgRandomPage}</a>
-                         <li><a href=@{toMaster $ ActivityR 1}>_{MsgRecentActivity}</a>
-                         <li><a href=@{toMaster UploadR}>_{MsgUploadFile}</a></li>
-                         <li><a href=@{toMaster AtomSiteR} type="application/atom+xml" rel="alternate" title="ATOM Feed">_{MsgAtomFeed}</a>
-                         <li><a href=@{toMaster HelpR}>_{MsgHelp}</a></li>
-
-                 $maybe page <- pgName layout
-                   <li .dropdown>
-                     <a href="#" .dropdown-toggle data-toggle="dropdown">
-                       This page
-                       <b .caret>
-                     <ul .dropdown-menu role="menu">
-                       $if showTab EditTab
-                         <li class=#{tabClass EditTab}>
-                           <a href=@{toMaster $ EditR page}>_{MsgEdit}</a>
-                       <li class=#{tabClass ViewTab}>
-                         <a href=@{toMaster $ ViewR page}>_{MsgView}</a>
-                       $if showTab HistoryTab
-                         <li class=#{tabClass HistoryTab}>
-                           <a href=@{toMaster $ HistoryR 1 page}>_{MsgHistory}</a>
-                       $if showTab DiscussTab
-                         <li class=#{tabClass DiscussTab}><a href=@{toMaster $ ViewR $ discussPageFor page}>_{MsgDiscuss}</a>
-                                 <li><a href=@{toMaster $ RawR page}>_{MsgRawPageSource}</a>
-                       <li><a href=@{toMaster $ DeleteR page}>_{MsgDeleteThisPage}</a>
-                       <li><a href=@{toMaster $ AtomPageR page} type="application/atom+xml" rel="alternate" title="This page's ATOM Feed">_{MsgAtomFeed}</a>
-
-                   <li .dropdown>
-                     <a href="#" .dropdown-toggle data-toggle="dropdown">
-                       _{MsgExport}
-                       <b .caret>
-                       <ul .dropdown-menu role="menu">
-                         $forall (f,_) <- exportFormats
-                           <li>
-                             <a href=@{toMaster $ ExportR f page}>#{f}
-                 <form .navbar-form .navbar-right role="search" method="post" action=@{searchRoute} id="searchform">
-                   <div .form-group>
-                     <label .sr-only for="patterns">_{MsgSearch}
-                     <input type="text" .form-control placeholder="_{MsgSearch}" name="patterns" id="patterns">
-                 <form .navbar-form .navbar-right role="go" method="post" action=@{goRoute} id="searchform">
-                   <div .form-group>
-                     <label .sr-only for="patterns">_{MsgGo}
-                     <input type="text" .form-control placeholder="_{MsgGo}" name="gotopage" id="gotopage">
-         <div #messages>
-         <div #content>
-           ^{content}
+    <header>
+      <a href=@{toMaster HomeR}><img .logo src=@{logoRoute} alt=logo></a>
+      <form role="search" method="post" action=@{searchRoute} id="searchform">
+        <h1>Blog Template
+        <input type="search" .form-control placeholder="_{MsgSearch}" name="patterns" id="patterns">
+      <nav>
+        <ul>
+          <li><a href=@{toMaster HomeR}>_{MsgFrontPage}</a>
+          <li><a href=@{toMaster IndexBaseR}>_{MsgDirectory}</a>
+          <li><a href=@{toMaster CategoriesR}>_{MsgCategories}</a>
+          <li><a href=@{toMaster RandomR}>_{MsgRandomPage}</a>
+          <li><a href=@{toMaster $ ActivityR 1}>_{MsgRecentActivity}</a>
+          <li><a href=@{toMaster UploadR}>_{MsgUploadFile}</a>
+          <li><a href=@{toMaster AtomSiteR} type="application/atom+xml" rel="alternate" title="ATOM Feed">_{MsgAtomFeed}</a>
+          <li><a href=@{toMaster HelpR}>_{MsgHelp}</a>
+    <main>
+      <nav>
+        <ul>
+          $maybe page <- pgName layout
+            $if showTab EditTab
+              <li class=#{tabClass EditTab}>
+                <a href=@{toMaster $ EditR page}>_{MsgEdit}</a>
+            <li class=#{tabClass ViewTab}>
+              <a href=@{toMaster $ ViewR page}>_{MsgView}</a>
+            $if showTab HistoryTab
+              <li class=#{tabClass HistoryTab}>
+                <a href=@{toMaster $ HistoryR 1 page}>_{MsgHistory}</a>
+            $if showTab DiscussTab
+              <li class=#{tabClass DiscussTab}><a href=@{toMaster $ ViewR $ discussPageFor page}>_{MsgDiscuss}</a>
+                      <li><a href=@{toMaster $ RawR page}>_{MsgRawPageSource}</a>
+            <li><a href=@{toMaster $ DeleteR page}>_{MsgDeleteThisPage}</a>
+            <li><a href=@{toMaster $ AtomPageR page} type="application/atom+xml" rel="alternate" title="This page's ATOM Feed">_{MsgAtomFeed}</a>
+         
+      <aside>
+        _{MsgExport}
+      <article id=1>
+        ^{content}
   |]
 
 -- HANDLERS and utility functions, not exported:
@@ -423,16 +389,18 @@ view mbrev page = do
                        atomLink (toMaster $ AtomPageR page)
                           "Atom link for this page"
                        [whamlet|
-                         <h1 .title>#{page}
-                         $maybe rev <- mbrev
-                           <h2 .revision>#{rev}
-                         ^{contw}
-                         $if null categories
-                         $else
-                           <div#categories>
-                             <ul>
-                               $forall category <- categories
-                                 <li><a href=@{toMaster $ CategoryR category}>#{category}
+                          <header>
+                            <h1>#{page}
+                            $maybe rev <- mbrev
+                              <h2>#{rev}
+                          ^{contw}
+                          <footer>
+                            $if null categories
+                            $else
+                              <div#categories>
+                                <ul>
+                                  $forall category <- categories
+                                    <li><a href=@{toMaster $ CategoryR category}>#{category}
                        |]
 
 getIndexBaseR :: HasGitit master => GH master Html
@@ -461,14 +429,13 @@ getIndexFor paths = do
         return ("folder", route, toMessage $ Page page)
   entries <- mapM process prunedListing
   makePage pageLayout{ pgName = Nothing } $ [whamlet|
-    <h1 .title>
+    <h1>
       $forall up <- updirs
         ^{upDir toMaster up}
-    <div .index>
-      <ul>
-        $forall (cls,route,name) <- entries
-          <li .#{cls}>
-            <a href=@{route}>#{name}</a>
+    <ul>
+      $forall (cls,route,name) <- entries
+        <li .#{cls}>
+          <a href=@{route}>#{name}
   |]
 
 upDir :: (Route Gitit -> Route master) -> [Text] -> WidgetT master IO ()
@@ -476,7 +443,8 @@ upDir toMaster fs = do
   let (route, lastdir) = case reverse fs of
                           (f:_)  -> (IndexR $ Page fs, f)
                           []     -> (IndexBaseR, "\x2302")
-  [whamlet|<a href=@{toMaster $ route}>#{lastdir}/</a>|]
+  [whamlet|<a href=@{toMaster $ route}>#{lastdir}/
+  |]
 
 getRawContents :: HasGitit master
                => FilePath
@@ -732,13 +700,14 @@ showEditForm page route enctype form =
            "html");
      };   |]
     [whamlet|
-      <h1>#{page}</h1>
+      <header>
+        <h1>#{page}
       <div #editform>
         <form method=post action=@{route} enctype=#{enctype}>
           ^{form}
           <input type=submit>
           <input type=button onclick="updatePreviewPane()" value="Preview">
-     <div #previewpane>
+      <div #previewpane>
     |]
 
 postUpdateR :: HasGitit master

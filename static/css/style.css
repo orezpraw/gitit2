@@ -1,0 +1,273 @@
+/* The following resets CSS styles from browser
+ * dependent defaults to a single set of defaults
+ * and helps out with some html5 support on
+ * older browsers */
+/* http://meyerweb.com/eric/tools/css/reset/ 
+ *  v2.0 | 20110126
+ *  License: none (public domain)
+ */
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+    display: block;
+}
+body {
+    line-height: 1;
+}
+ol, ul {
+    list-style: none;
+}
+blockquote, q {
+    quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+    content: '';
+    content: none;
+}
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+/* 
+ * --------------------------------------------------------------------------
+ * The following css is the actual CSS code for the style  ------------------
+ * --------------------------------------------------------------------------
+ */
+body {
+    overflow-x: hidden;
+}
+
+body>header {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+body>header .logo {
+    max-height: 72pt;
+}
+
+header h1 {
+    /*     display: block; */
+    font-size: 300%;
+}
+
+body>header form {
+    text-align: center;
+    order: 1;
+    margin: 0.5em;
+}
+
+body>header input {
+    margin: 0.5em;
+}
+
+body>header nav {
+    text-align: right;
+    order: 2;
+    margin: 1em;
+}
+
+body>header nav li:after {
+    content: ' ⟵';
+}
+
+h2 {
+    font-size: 200%;
+}
+
+main {
+    padding-left: 2em;
+    padding-right: 2em;
+    border-top: 1pt solid currentColor;
+    border-bottom: 1pt solid currentColor;
+    text-align: center;    
+}
+
+main * {
+    text-align: justify;
+}
+
+main nav {
+    border-bottom: 1pt solid currentColor;
+}
+
+@media all and (min-width: 60em) {
+main nav {
+    float: left;
+    clear: left;
+    margin-right: 0em;
+    margin-bottom: 2em;
+    margin-left: -2em;
+    min-width: 12em;
+    width: 13em;
+}
+}
+
+ol, ul {
+    margin: 1em;
+}
+
+main nav li:before {
+    content: '⟶ ';
+    width: 100%;
+}
+
+@media all and (min-width: 60em) {
+main>aside {
+    margin-bottom: 2em;
+    margin-right: -2em;
+    float: right;
+    clear: right;
+    min-width: 15em;
+    width: 30%;
+    max-width: 30em;
+}
+}
+
+main>aside {
+    border-bottom: 1pt solid currentColor;
+}
+
+article {
+    display: inline-block;
+    margin: 1em;
+    border-top: 1pt solid currentColor;
+    border-bottom: 1pt solid currentColor;
+    vertical-align: top;
+}
+
+@media all and (min-width: 60em) {
+    article {
+        max-width: 64em;
+        width: 64%;
+        min-width: 30em;
+    }
+}
+
+article header {
+    display: block;
+    margin: 1em;
+}
+
+article section {
+    margin: 1em;
+}
+
+article footer {
+    margin: 1em;
+    margin-left: 0;
+}
+
+article header h1 {
+    font-size: 250%;
+}
+
+p {
+    margin: 1em;
+}
+
+blockquote {
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 3em;
+    margin-right: 3em;
+}
+
+p, blockquote, figure {
+    max-width: 60em;
+}
+
+figure {
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 3em;
+    margin-right: 3em;
+    padding: 1em;
+    border: 1pt solid currentColor;
+    display: block;
+    text-align: center;
+}
+
+figure img {
+    width: 95%;
+}
+
+
+figcaption {
+    margin: 1em;
+}
+
+cite {
+    font-size: 75%;
+    margin: 1em;
+    margin-left: 0;
+    text-align: left;
+    display: block;
+}
+
+blockquote:before {
+    content: '“';
+    font-size: 200%;
+    margin-left: -1em;
+    display: block;
+    float: left;
+}
+blockquote:after {
+    content: '”';
+    font-size: 200%;
+    margin-right: -1em;
+    margin-top: -0.15em;
+    display: block;
+    float: right;
+}
+
+
+article header p {
+    font-weight: bold;
+    margin-left: 0;
+    margin-top: 0;
+    font-size: 125%;
+}
+
+body>footer {
+    text-align: center;
+}
+
+body>footer p, body>footer img {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 1em;
+}
+
+body>footer nav {
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+    margin: 2em;
+}
