@@ -102,7 +102,7 @@ makeDefaultPage layout content = do
     toWidget $ [lucius|input.hidden { display: none; } |]
     [whamlet|
     <header>
-      <a href=@{toMaster HomeR}><img .logo src=@{logoRoute} alt=logo></a>
+      <a href=@{toMaster HomeR}><img .logo src=@{logoRoute} alt=logo>
       <form role="search" method="post" action=@{searchRoute} id="searchform">
         <h1>Blog Template
         <input type="search" .form-control placeholder="_{MsgSearch}" name="patterns" id="patterns">
@@ -122,20 +122,21 @@ makeDefaultPage layout content = do
           $maybe page <- pgName layout
             $if showTab EditTab
               <li class=#{tabClass EditTab}>
-                <a href=@{toMaster $ EditR page}>_{MsgEdit}</a>
+                <a href=@{toMaster $ EditR page}>_{MsgEdit}
             <li class=#{tabClass ViewTab}>
-              <a href=@{toMaster $ ViewR page}>_{MsgView}</a>
+              <a href=@{toMaster $ ViewR page}>_{MsgView}
             $if showTab HistoryTab
               <li class=#{tabClass HistoryTab}>
-                <a href=@{toMaster $ HistoryR 1 page}>_{MsgHistory}</a>
+                <a href=@{toMaster $ HistoryR 1 page}>_{MsgHistory}
             $if showTab DiscussTab
               <li class=#{tabClass DiscussTab}><a href=@{toMaster $ ViewR $ discussPageFor page}>_{MsgDiscuss}</a>
-                      <li><a href=@{toMaster $ RawR page}>_{MsgRawPageSource}</a>
+              <li><a href=@{toMaster $ RawR page}>_{MsgRawPageSource}</a>
             <li><a href=@{toMaster $ DeleteR page}>_{MsgDeleteThisPage}</a>
             <li><a href=@{toMaster $ AtomPageR page} type="application/atom+xml" rel="alternate" title="This page's ATOM Feed">_{MsgAtomFeed}</a>
          
-      <aside>
+      <!--<aside>
         _{MsgExport}
+        -->
       <article id=1>
         ^{content}
   |]
@@ -787,7 +788,8 @@ getDiffR fromRev toRev page = do
                      , pgTabs = []
                      , pgSelectedTab = EditTab } $
    [whamlet|
-     <h1 .title>#{page}
+     <header>
+        <h1>#{page}
      <h2 .revision>#{fromRev} &rarr; #{toRev}
      <pre>
         $forall t <- rawDiff
@@ -855,7 +857,8 @@ getHistoryR start page = do
       });
    |]
    [whamlet|
-     <h1 .title>#{page}
+     <header>
+        <h1>#{page}
      <p>_{MsgDragDiff}
      <ul>
        $forall (pos,rev,details) <- hist'
@@ -924,7 +927,8 @@ getActivityR start = do
                      , pgTabs = []
                      , pgSelectedTab = HistoryTab }
    [whamlet|
-     <h1 .title>Recent activity
+     <header>
+        <h1>Recent activity
      <ul>
        $forall details <- hist'
          <li>
