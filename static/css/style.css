@@ -84,7 +84,7 @@ body>header form {
 }
 
 body>header input {
-    margin: 0.5em;
+    margin: 1em;
 }
 
 body>header nav {
@@ -157,7 +157,6 @@ main>aside {
 article {
     display: inline-block;
     margin: 1em;
-    border-top: 1pt solid currentColor;
     border-bottom: 1pt solid currentColor;
     vertical-align: top;
 }
@@ -173,6 +172,7 @@ article {
 article header {
     display: block;
     margin: 1em;
+    border-bottom: 1pt solid currentColor;
 }
 
 article section {

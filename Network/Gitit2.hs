@@ -116,6 +116,7 @@ makeDefaultPage layout content = do
           <li><a href=@{toMaster UploadR}>_{MsgUploadFile}</a>
           <li><a href=@{toMaster AtomSiteR} type="application/atom+xml" rel="alternate" title="ATOM Feed">_{MsgAtomFeed}</a>
           <li><a href=@{toMaster HelpR}>_{MsgHelp}</a>
+        <div #userpane>
     <main>
       <nav>
         <ul>
@@ -908,6 +909,37 @@ pagination pageBackLink pageForwardLink =
 getActivityR :: HasGitit master
               => Int -> GH master Html
 getActivityR start = do
+  let items = 20
+  let offset = start - 1
+  fs <- filestore <$> getYesod
+  hist <- liftIO $ drop offset <$>
+           history fs [] (TimeRange Nothing Nothing) (Just $ start + items)
+  hist' <- mapM (revisionDetails True) hist
+  toMaster <- getRouteToParent
+  let pageForwardLink = if length hist > items
+                           then Just $ toMaster
+                                     $ ActivityR (start + items)
+                           else Nothing
+  let pageBackLink    = if start > 1
+                           then Just $ toMaster
+                                     $ ActivityR (start - items)
+                           else Nothing
+  makePage pageLayout{ pgName = Nothing
+                     , pgTabs = []
+                     , pgSelectedTab = HistoryTab }
+   [whamlet|
+     <header>
+        <h1>Recent activity
+     <ul>
+       $forall details <- hist'
+         <li>
+           ^{details}
+     ^{pagination pageBackLink pageForwardLink}
+    |]
+
+getBlogR :: HasGitit master
+              => Int -> GH master Html
+getBlogR start = do
   let items = 20
   let offset = start - 1
   fs <- filestore <$> getYesod
