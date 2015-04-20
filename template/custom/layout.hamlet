@@ -1,0 +1,39 @@
+    <header>
+      <a href=@{toMaster HomeR}><img .logo src=@{logoRoute} alt=logo>
+      <form role="search" method="post" action=@{searchRoute} id="searchform">
+        <h1>Blog Template
+        <input type="search" .form-control placeholder="_{MsgSearch}" name="patterns" id="patterns">
+      <nav>
+        <ul>
+          <li><a href=@{toMaster HomeR}>_{MsgFrontPage}</a>
+          <li><a href=@{toMaster IndexBaseR}>_{MsgDirectory}</a>
+          <li><a href=@{toMaster CategoriesR}>_{MsgCategories}</a>
+          <li><a href=@{toMaster RandomR}>_{MsgRandomPage}</a>
+          <li><a href=@{toMaster $ ActivityR 1}>_{MsgRecentActivity}</a>
+          <li><a href=@{toMaster UploadR}>_{MsgUploadFile}</a>
+          <li><a href=@{toMaster AtomSiteR} type="application/atom+xml" rel="alternate" title="ATOM Feed">_{MsgAtomFeed}</a>
+          <li><a href=@{toMaster HelpR}>_{MsgHelp}</a>
+        <div #userpane>
+    <main>
+      <nav>
+        <ul>
+          $maybe page <- pgName layout
+            $if showTab EditTab
+              <li class=#{tabClass EditTab}>
+                <a href=@{toMaster $ EditR page}>_{MsgEdit}
+            <li class=#{tabClass ViewTab}>
+              <a href=@{toMaster $ ViewR page}>_{MsgView}
+            $if showTab HistoryTab
+              <li class=#{tabClass HistoryTab}>
+                <a href=@{toMaster $ HistoryR 1 page}>_{MsgHistory}
+            $if showTab DiscussTab
+              <li class=#{tabClass DiscussTab}><a href=@{toMaster $ ViewR $ discussPageFor page}>_{MsgDiscuss}</a>
+              <li><a href=@{toMaster $ RawR page}>_{MsgRawPageSource}</a>
+            <li><a href=@{toMaster $ DeleteR page}>_{MsgDeleteThisPage}</a>
+            <li><a href=@{toMaster $ AtomPageR page} type="application/atom+xml" rel="alternate" title="This page's ATOM Feed">_{MsgAtomFeed}</a>
+         
+      <!--<aside>
+        _{MsgExport}
+        -->
+      <article id=1>
+        ^{content}

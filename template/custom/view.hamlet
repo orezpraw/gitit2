@@ -1,0 +1,12 @@
+                          <header>
+                            <h1>#{page}
+                            $maybe rev <- mbrev
+                              <h2>#{rev}
+                          ^{contw}
+                          <footer>
+                            $if null categories
+                            $else
+                              <div#categories>
+                                <ul>
+                                  $forall category <- categories
+                                    <li><a href=@{toMaster $ CategoryR category}>#{category}
