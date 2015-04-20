@@ -1240,6 +1240,14 @@ postUploadR = do
                                         redirect $ ViewR page
        _             -> showUploadForm enctype widget
 
+requireEditor :: HasGitit master => GH master GititUser
+requireEditor = do
+    user <- requireUser
+    editorUser <- isEditor user
+    if editorUser
+       then return user
+       else fail "unauthorized"
+
 ----------
 -- Caching
 --
