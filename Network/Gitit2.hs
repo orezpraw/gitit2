@@ -766,7 +766,7 @@ showEditForm page route enctype form =
   makePage pageLayout{ pgName = Just page
                      , pgTabs = [EditTab]
                      , pgSelectedTab = EditTab }
-  $ replicate 1 $ do
+  $ [ do
     toWidget [julius|
      function updatePreviewPane() {
        var url = location.pathname.replace(/_edit\//,"_preview/");
@@ -795,8 +795,11 @@ showEditForm page route enctype form =
           ^{form}
           <input type=submit>
           <input type=button onclick="updatePreviewPane()" value="Preview">
+    |],
+    [whamlet|
      <div #previewpane>
-    |]
+    |]      
+    ]
 
 postUpdateR :: HasGitit master
           => RevisionId -> Page -> GH master Html
