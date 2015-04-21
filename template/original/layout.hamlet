@@ -67,5 +67,6 @@
                      <label .sr-only for="patterns">_{MsgGo}
                      <input type="text" .form-control placeholder="_{MsgGo}" name="gotopage" id="gotopage">
          <div #messages>
-         <div #content>
-           ^{content}
+         $forall contenti <- content
+            <div #content>
+              ^{contenti}

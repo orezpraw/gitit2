@@ -48,7 +48,7 @@ class (Yesod master, RenderMessage master FormMessage,
   -- | Return user information or redirect to login page.
   isEditor :: GititUser -> GH master Bool
   -- | Gitit subsite page layout.
-  makePage :: PageLayout -> WidgetT master IO () -> GH master Html
+  makePage :: PageLayout -> [WidgetT master IO ()] -> GH master Html
   -- | Plugins.
   getPlugins :: GH master [Plugin master]
   -- | Route for static content

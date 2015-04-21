@@ -90,7 +90,7 @@ data HtmlMathMethod = UseMathML | UseMathJax | UsePlainMath
 getConfig :: GH master GititConfig
 getConfig = config <$> getYesod
 
-makeDefaultPage :: HasGitit master => PageLayout -> WidgetT master IO () -> GH master Html
+makeDefaultPage :: HasGitit master => PageLayout -> [WidgetT master IO ()] -> GH master Html
 makeDefaultPage layout content = do
   toMaster <- getRouteToParent
   let logoRoute = staticR $ StaticRoute ["img","logo.png"] []
@@ -300,14 +300,14 @@ getDeleteR page = do
   makePage pageLayout{ pgName = Just page
                      , pgTabs = []
                      }
-    [whamlet|
+    [ [whamlet|
       <h1>#{page}</h1>
       <div #deleteform>
         <form method=post action=@{toMaster $ DeleteR page}>
           <p>_{MsgConfirmDelete page}
           <input type=text class=hidden name=fileToDelete value=#{fileToDelete}>
           <input type=submit value=_{MsgDelete}>
-    |]
+    |] ]
 
 postDeleteR :: HasGitit master => Page -> GH master Html
 postDeleteR page = do
@@ -425,7 +425,7 @@ view mbrev page = do
                               , pgTabs = tabs
                               , pgSelectedTab = if isDiscussPage page
                                                    then DiscussTab
-                                                   else ViewTab } $
+                                                   else ViewTab } $ replicate 1 $
                     do setTitle $ toMarkup page
                        toWidget [julius|
                                    $(document).keypress(function(event) {
@@ -505,7 +505,7 @@ getIndexFor paths = do
         let route = toMaster $ IndexR $ Page (paths ++ page)
         return ("folder", route, toMessage $ Page page)
   entries <- mapM process prunedListing
-  makePage pageLayout{ pgName = Nothing } $ [whamlet|
+  makePage pageLayout{ pgName = Nothing } $ [ [whamlet|
     <h1 .title>
       $forall up <- updirs
         ^{upDir toMaster up}
@@ -514,7 +514,7 @@ getIndexFor paths = do
         $forall (cls,route,name) <- entries
           <li .#{cls}>
             <a href=@{route}>#{name}</a>
-  |]
+  |] ]
 
 upDir :: (Route Gitit -> Route master) -> [Text] -> WidgetT master IO ()
 upDir toMaster fs = do
@@ -675,7 +675,7 @@ searchResults patterns = do
   toMaster <- getRouteToParent
   makePage pageLayout{ pgName = Nothing
                      , pgTabs = []
-                     , pgSelectedTab = EditTab } $ do
+                     , pgSelectedTab = EditTab } $ replicate 1 $ do
     toWidget [julius|
       function toggleMatches(obj) {
         var pattern = $('#pattern').text();
@@ -766,7 +766,7 @@ showEditForm page route enctype form =
   makePage pageLayout{ pgName = Just page
                      , pgTabs = [EditTab]
                      , pgSelectedTab = EditTab }
-  $ do
+  $ replicate 1 $ do
     toWidget [julius|
      function updatePreviewPane() {
        var url = location.pathname.replace(/_edit\//,"_preview/");
@@ -873,7 +873,7 @@ getDiffR fromRev toRev page = do
   makePage pageLayout{ pgName = Just page
                      , pgTabs = []
                      , pgSelectedTab = EditTab } $
-   [whamlet|
+   [ [whamlet|
      <h1 .title>#{page}
      <h2 .revision>#{fromRev} &rarr; #{toRev}
      <pre>
@@ -885,7 +885,7 @@ getDiffR fromRev toRev page = do
                <span .deleted>#{intercalate "\n" xs}
              $of Second xs
                <span .added>#{intercalate "\n" xs}
-     |]
+     |] ]
 
 getHistoryR :: HasGitit master
             => Int -> Page -> GH master Html
@@ -918,7 +918,7 @@ getHistoryR start page = do
                 else [ViewTab,HistoryTab]
   makePage pageLayout{ pgName = Just page
                      , pgTabs = tabs
-                     , pgSelectedTab = HistoryTab } $ do
+                     , pgSelectedTab = HistoryTab } $ replicate 1 $ do
    addScript $ staticR $ StaticRoute ["js","jquery-ui-1.8.21.custom.min.js"] []
    toWidget [julius|
       $(document).ready(function(){
@@ -1010,14 +1010,14 @@ getActivityR start = do
   makePage pageLayout{ pgName = Nothing
                      , pgTabs = []
                      , pgSelectedTab = HistoryTab }
-   [whamlet|
+   [ [whamlet|
      <h1 .title>Recent activity
      <ul>
        $forall details <- hist'
          <li>
            ^{details}
      ^{pagination pageBackLink pageForwardLink}
-    |]
+    |] ]
 
 getAtomSiteR :: HasGitit master => GH master RepAtom
 getAtomSiteR = do
@@ -1213,7 +1213,7 @@ showUploadForm enctype form = do
   toMaster <- getRouteToParent
   makePage pageLayout{ pgName = Nothing
                      , pgTabs = []
-                     , pgSelectedTab = EditTab } $ do
+                     , pgSelectedTab = EditTab } $ replicate 1 $ do
     toWidget $ [julius|
       $(document).ready(function(){
           $("#file").change(function () {
@@ -1450,12 +1450,12 @@ getCategoriesR = do
     makePage pageLayout{ pgName = Nothing
                        , pgTabs = []
                        , pgSelectedTab = EditTab }
-    [whamlet|
+    [ [whamlet|
       <h1>_{MsgCategories}</h1>
       <ul>
         $forall category <- allcategories
           <li><a href=@{toMaster $ CategoryR category}>#{category}
-    |]
+    |] ]
 
 getCategoryR :: HasGitit master => Text -> GH master Html
 getCategoryR category = do
@@ -1471,12 +1471,12 @@ getCategoryR category = do
     makePage pageLayout{ pgName = Nothing
                        , pgTabs = []
                        , pgSelectedTab = EditTab }
-    [whamlet|
+    [ [whamlet|
       <h1>_{MsgCategory}: #{category}</h1>
       <ul.index>
         $forall page <- matchingpages
           <li .page><a href=@{toMaster $ ViewR page}>#{page}
-    |]
+    |] ]
 
 -- | Examine metadata at beginning of file, returning list of categories.
 -- Note:  Must be strict.
