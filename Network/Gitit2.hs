@@ -202,7 +202,26 @@ isPageFile :: FilePath -> GH master Bool
 isPageFile f = do
   conf <- getConfig
   return $ takeExtension f == page_extension conf
+  
+isFSDirectory :: FilePath -> GH master Bool
+isFSDirectory f = do
+  fs <- filestore <$> getYesod
+  dirList <- liftIO $ try $ directory fs f
+--              $ \e -> case e of
+--                       FS.NotFound -> IO []
+--                       _           -> throw e
+  case dirList of
+    Right _           -> return True
+    Left  FS.NotFound -> return False
+    Left e            -> fail (show e)
 
+-- TODO: add config option
+isBlogDirectory :: FilePath -> GH master Bool
+isBlogDirectory f = do
+  conf <- getConfig
+  dir <- isFSDirectory f
+  return $ ((takeFileName f == "blog") && dir)
+  
 allPageFiles :: GH master [FilePath]
 allPageFiles = do
   fs <- filestore <$> getYesod
@@ -354,6 +373,11 @@ wikifyAndCache page mbrev = do
               Nothing -> return Nothing)
       (return . Just)
       mbTocAndPageHtml
+      
+blogToHtml :: HasGitit master => FilePath -> GH master (WidgetT master IO ())
+blogToHtml path = do
+  return $ [whamlet|<p>Blog to HTML|]
+  
 
 view :: HasGitit master => Maybe RevisionId -> Page -> GH master Html
 view mbrev page = do
@@ -369,9 +393,15 @@ view mbrev page = do
          mbcont' <- getRawContents path' mbrev
          is_source <- isSourceFile path'
          case mbcont' of
-              Nothing -> do
-                 setMessageI (MsgNewPage page)
-                 redirect $ EditR page
+              Nothing -> do -- put something here
+                 blog <- isBlogDirectory path'
+                 case blog of
+                      True -> do
+                        blogContents <- blogToHtml path'
+                        caching path' $ layoutw [ViewTab,HistoryTab] [] [] blogContents
+                      False -> do
+                        setMessageI (MsgNewPage page)
+                        redirect $ EditR page
               Just contents
                | is_source -> do
                    htmlContents <- sourceToHtml path' contents
@@ -379,10 +409,14 @@ view mbrev page = do
                | otherwise -> do
                   ct <- getMimeType path'
                   let content = toContent contents
-                  caching path' (return (ct, content)) >>= sendResponse
-   where layout tabs tocHierarchy categories cont = do
+                  caching path' (return (ct, content)) >>= sendResponse 
+  where
+    layout tabs tocHierarchy categories cont = do
+      contw <- toWikiPage cont
+      layoutw tabs tocHierarchy categories contw
+      
+    layoutw tabs tocHierarchy categories contw = do
            toMaster <- getRouteToParent
-           contw <- toWikiPage cont
            mbTocDepth <- toc_depth <$> getConfig
            mbToc <- extractToc mbTocDepth (pageToText page) tocHierarchy
            subpageTocInContent <- subpage_toc_in_content <$> getConfig
@@ -412,6 +446,7 @@ view mbrev page = do
                        atomLink (toMaster $ AtomPageR page)
                           "Atom link for this page"
                        $(whamletFile "template/original/view.hamlet")
+      
 
 extractTocAbs :: HasGitit master
               => Maybe Int
