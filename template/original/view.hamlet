@@ -1,12 +1,12 @@
-                         <h1 .title>#{page}
-                         $maybe toc <- mbToc
+                         <h1 .title>#{path page}
+                         $maybe toc <- mbToc page
                            <div id="TOC">^{toc}
-                         $maybe rev <- mbrev
+                         $maybe rev <- mbrev page
                            <h2 .revision>#{rev}
-                         ^{contw}
-                         $if null categories
+                         ^{content page}
+                         $if null (categories page)
                          $else
                            <div#categories>
                              <ul>
-                               $forall category <- categories
-                                 <li><a href=@{toMaster $ CategoryR category}>#{category}
+                               $forall category <- categories page
+                                 <li><a href=@{(toMaster page) $ CategoryR category}>#{category}

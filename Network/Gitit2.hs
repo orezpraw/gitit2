@@ -373,21 +373,45 @@ wikifyAndCache page mbrev = do
               Nothing -> return Nothing)
       (return . Just)
       mbTocAndPageHtml
+
       
+isBlogFile :: HasGitit master => Resource -> GH master Bool
+isBlogFile (FSDirectory _) = return False
+isBlogFile (FSFile f) = do 
+  isPageFileResult <- isPageFile f
+  return isPageFileResult
+  case isPageFileResult of
+    True -> do
+      isDiscussPageFileResult <- isDiscussPageFile f
+      case isDiscussPageFileResult of
+        True -> return False
+        False -> return True
+    False -> return False
+
 blogToHtml :: HasGitit master => FilePath -> GH master (WidgetT master IO ())
 blogToHtml path = do
-  return $ [whamlet|<p>Blog to HTML|]
-  
+  fs <- filestore <$> getYesod
+  resources <- liftIO (directory fs path)
+  blogFiles <- filterM isBlogFile resources
+  let resourceToText (FSDirectory f) = T.pack f
+  let resourceToText (FSFile f) = T.pack f
+  blogFilesT <- mapM (return . resourceToText) blogFiles
+  return $ [whamlet|
+    <p>Blog to HTML
+    <ul>
+      $forall blogFile <- blogFilesT
+        <li>#{blogFile}
+  |]
 
 view :: HasGitit master => Maybe RevisionId -> Page -> GH master Html
 view mbrev page = do
   mbTocAndPageHtml <- wikifyAndCache page mbrev
   case mbTocAndPageHtml of
     Just (tocHierarchy, categories, htmlContents) ->
-             layout [ViewTab,EditTab,HistoryTab,DiscussTab]
+             layout page mbrev [ViewTab,EditTab,HistoryTab,DiscussTab]
                             tocHierarchy
                             categories
-                            htmlContents
+                            [htmlContents]
     Nothing -> do
          path' <- pathForFile page
          mbcont' <- getRawContents path' mbrev
@@ -398,56 +422,82 @@ view mbrev page = do
                  case blog of
                       True -> do
                         blogContents <- blogToHtml path'
-                        caching path' $ layoutw [ViewTab,HistoryTab] [] [] blogContents
+                        caching path' $ layoutw page mbrev [ViewTab,HistoryTab] [] [] [blogContents]
                       False -> do
                         setMessageI (MsgNewPage page)
                         redirect $ EditR page
               Just contents
                | is_source -> do
                    htmlContents <- sourceToHtml path' contents
-                   caching path' $ layout [ViewTab,HistoryTab] [] [] htmlContents
+                   caching path' $ layout page mbrev [ViewTab,HistoryTab] [] [] [htmlContents]
                | otherwise -> do
                   ct <- getMimeType path'
                   let content = toContent contents
-                  caching path' (return (ct, content)) >>= sendResponse 
-  where
-    layout tabs tocHierarchy categories cont = do
-      contw <- toWikiPage cont
-      layoutw tabs tocHierarchy categories contw
-      
-    layoutw tabs tocHierarchy categories contw = do
-           toMaster <- getRouteToParent
-           mbTocDepth <- toc_depth <$> getConfig
-           mbToc <- extractToc mbTocDepth (pageToText page) tocHierarchy
-           subpageTocInContent <- subpage_toc_in_content <$> getConfig
-           makePage pageLayout{ pgName = Just page
-                              , pgPageTools = True
-                              , pgTabs = tabs
-                              , pgSelectedTab = if isDiscussPage page
-                                                   then DiscussTab
-                                                   else ViewTab } $ replicate 1 $
-                    do setTitle $ toMarkup page
-                       toWidget [julius|
-                                   $(document).keypress(function(event) {
-                                       if (event.which == 18) {
-                                          $.post("@{toMaster $ ExpireR page}");
-                                          window.location.reload(true);
-                                          };
-                                       });
-                                |]
-                       when subpageTocInContent
-                           (void $ toWidget [julius|
-                                      $(".toc-subpage-link").each(function(_index, tocSubpageLink){
-                                        var jTocSubpageLink = $(tocSubpageLink);
-                                        var subpageLinkIdent = jTocSubpageLink.attr("id").substr(4);
-                                        $("#" + subpageLinkIdent).html(jTocSubpageLink.clone().children());
-                                      });
-                                   |])
-                       atomLink (toMaster $ AtomPageR page)
-                          "Atom link for this page"
-                       $(whamletFile "template/original/view.hamlet")
-      
+                  caching path' (return (ct, content)) >>= sendResponse
+                  
+layout :: HasGitit master => Page -> Maybe RevisionId -> [Tab] -> [GititToc] -> [Text] -> [Html] -> GH master Html
+layout page mbrev tabs tocHierarchy categories conts = do
+  contws <- mapM toWikiPage conts
+  layoutw page mbrev tabs tocHierarchy categories contws
+  
+layoutw :: HasGitit master => Page -> Maybe RevisionId -> [Tab] -> [GititToc] -> [Text] -> [WidgetT master IO ()] -> GH master Html
+layoutw page mbrev tabs tocHierarchy categories contws = do
+      toMaster <- getRouteToParent
+      mbTocDepth <- toc_depth <$> getConfig
+      mbToc <- extractToc mbTocDepth (pageToText page) tocHierarchy
+      subpageTocInContent <- subpage_toc_in_content <$> getConfig
+      makePage pageLayout{ pgName = Just page
+                , pgPageTools = True
+                , pgTabs = tabs
+                , pgSelectedTab = if isDiscussPage page
+                                      then DiscussTab
+                                      else ViewTab }
+          (multiPageLayoutW [(SinglePage page subpageTocInContent toMaster categories mbToc mbrev (head contws))])
 
+data SinglePage master = SinglePage {
+       path :: Page,
+       subpageTocInContent :: Bool,
+       toMaster :: (Route Gitit -> Route master),
+       categories :: [Text],
+       mbToc :: Maybe (WidgetT master IO ()),
+       mbrev :: Maybe RevisionId,
+       content :: WidgetT master IO ()
+}
+
+multiPageLayoutW :: HasGitit master => [SinglePage master] -> [WidgetT master IO ()]
+multiPageLayoutW pages =
+  firstPageContents (head pages) : map everyPageContents (tail pages)
+
+everyPageContents :: HasGitit master => SinglePage master
+                           -> WidgetT master IO ()
+everyPageContents page = do
+    $(whamletFile "template/original/view.hamlet")
+          
+firstPageContents :: HasGitit master => SinglePage master
+                           -> WidgetT master IO ()
+firstPageContents page = do
+    setTitle $ toMarkup (path page)
+    toWidget [julius|
+                $(document).keypress(function(event) {
+                    if (event.which == 18) {
+                      $.post("@{(toMaster page) (ExpireR (path page))}");
+                      window.location.reload(true);
+                      };
+                    });
+            |]
+    when (subpageTocInContent page)
+        (void $ toWidget [julius|
+                  $(".toc-subpage-link").each(function(_index, tocSubpageLink){
+                    var jTocSubpageLink = $(tocSubpageLink);
+                    var subpageLinkIdent = jTocSubpageLink.attr("id").substr(4);
+                    $("#" + subpageLinkIdent).html(jTocSubpageLink.clone().children());
+                  });
+                |])
+    atomLink ((toMaster page) (AtomPageR (path page)))
+      "Atom link for this page"
+    everyPageContents page
+
+      
 extractTocAbs :: HasGitit master
               => Maybe Int
               -> (WriterOptions
@@ -830,14 +880,14 @@ update' mbrevid page = do
               mres <- liftIO $ FS.modify fs path revid auth comm cont
               case mres of
                    Right () -> do
-                      expireCache path
+                      expireCache (takeDirectory path)
                       redirect $ ViewR page
                    Left mergeinfo -> do
                       setMessageI $ MsgMerged revid
                       edit False (mergeText mergeinfo)
                            (Just $ revId $ mergeRevision mergeinfo) page
            Nothing -> do
-             expireCache path
+             expireCache (takeDirectory path)
              liftIO $ save fs path auth comm cont
              redirect $ ViewR page
        _ -> showEditForm page route enctype widget
