@@ -40,7 +40,8 @@ applyPlugin wp pl = unPlugin pl wp
 -- of this typeclass.
 -- TODO: replace the user functions with isAuthorized from Yesod typeclass?
 class (Yesod master, RenderMessage master FormMessage,
-       RenderMessage master GititMessage) => HasGitit master where
+       RenderMessage master GititMessage,
+       ParseRoute master) => HasGitit master where
   -- | Return user information, if user is logged in, or nothing.
   maybeUser   :: GH master (Maybe GititUser)
   -- | Return user information or redirect to login page.

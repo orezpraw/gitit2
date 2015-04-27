@@ -62,6 +62,7 @@ import System.Random (randomRIO)
 import System.IO (Handle, withFile, IOMode(..))
 import System.IO.Error (isEOFError)
 import Control.Exception (catch, throw, handle, try)
+import Control.Exception.Base (IOException)
 import Text.Highlighting.Kate
 import Data.Time (getCurrentTime, addUTCTime)
 import Yesod.AtomFeed
@@ -323,9 +324,10 @@ postDeleteR page = do
 
 getViewR :: HasGitit master => Page -> GH master Html
 getViewR page = do
+  startRequest <- lift $ runInputGet $ iopt intField "start"
   pathForFile page >>= tryCache
-  view Nothing page
-
+  view startRequest Nothing page
+  
 postPreviewR :: HasGitit master => Page -> GH master Html
 postPreviewR page = do
   contents <- lift $ runInputPost $ ireq textField "contents"
@@ -343,7 +345,7 @@ getMimeType fp = do
          $ M.lookup (drop 1 $ takeExtension fp) mimeTypes
 
 getRevisionR :: HasGitit master => RevisionId -> Page -> GH master Html
-getRevisionR rev = view (Just rev)
+getRevisionR rev = view Nothing (Just rev)
 
 -- | Retrieves toc, categories and content from cache or create them and cache them
 wikifyAndCache :: HasGitit master
@@ -388,30 +390,71 @@ isBlogFile (FSFile f) = do
         False -> return True
     False -> return False
 
-blogToHtml :: HasGitit master => FilePath -> GH master (WidgetT master IO ())
-blogToHtml path = do
-  fs <- filestore <$> getYesod
-  resources <- liftIO (directory fs path)
-  blogFiles <- filterM isBlogFile resources
-  let resourceToText (FSDirectory f) = T.pack f
-  let resourceToText (FSFile f) = T.pack f
-  blogFilesT <- mapM (return . resourceToText) blogFiles
-  return $ [whamlet|
-    <p>Blog to HTML
-    <ul>
-      $forall blogFile <- blogFilesT
-        <li>#{blogFile}
-  |]
+isBlogFileRich :: HasGitit master => (Resource, Either String Revision) -> GH master Bool
+isBlogFileRich (r, _) = isBlogFile r
 
-view :: HasGitit master => Maybe RevisionId -> Page -> GH master Html
-view mbrev page = do
+blogCompare :: (Resource, Revision) -> (Resource, Revision) -> Ordering
+blogCompare (_, rev1) (_, rev2) = compare (revDateTime rev1) (revDateTime rev2)
+
+
+blogToWidgets :: HasGitit master => Maybe Int -> Page -> FilePath -> GH master ([(Maybe Page, WidgetT master IO ())])
+blogToWidgets startRequest blogPage path = do
+  fs <- filestore <$> getYesod
+  resources <- liftIO (richDirectory fs path)
+  blogFiles <- filterM isBlogFileRich resources
+  toMaster <- getRouteToParent
+  let resourceToText (FSDirectory f, _) = T.pack f
+  let resourceToText (FSFile f, _) = T.pack f
+  let resourceToFilePath (FSDirectory f) = f
+  let resourceToFilePath (FSFile f) = f
+  let getRichRevision :: (Resource, Either String Revision) -> GH master (Resource, Revision)
+      getRichRevision (resource, Right r) = return (resource, r)
+      getRichRevision (resource, Left r) = do
+        rev1 <- liftIO $ revision fs r
+        return (resource, rev1)
+  blogFilesRevisions <- mapM (getRichRevision) blogFiles
+  let blogFilesSorted = reverse $ sortBy blogCompare blogFilesRevisions
+  let maxPages = 10
+  let start = case startRequest of
+        Just itemNumber -> itemNumber
+        Nothing -> 0
+  selfRoute <- return (toMaster $ ViewR blogPage)
+--   let pageForwardLink :: HasGitit master => Maybe (Route master, [(Text, Text)])
+  pageForwardLink <-
+      return $ if (length blogFilesSorted - start + 1) > maxPages
+                  then Just (selfRoute, [(T.pack "start", T.pack $ show (start + maxPages))])
+                  else Nothing
+  pageBackLink <-
+      return $ if start > 1
+                  then Just (selfRoute, [(T.pack "start", T.pack $ show (start - maxPages))])
+                  else Nothing
+  let blogToWidget :: HasGitit master => (Resource, Revision) -> GH master (Maybe Page, WidgetT master IO ())
+      blogToWidget (res, rev) = do
+          page <- pageForPath (path </> (resourceToFilePath res))
+          mbTocAndPageHtml <- wikifyAndCache page (Nothing)
+          case mbTocAndPageHtml of
+              Just (tocHierarchy, categories, htmlContents) ->
+                  return (Just page, toWidget htmlContents)
+              Nothing ->
+                  error "Wat"
+  let blogEntries :: HasGitit master => GH master ([(Maybe Page, WidgetT master IO ())])
+      blogEntries = mapM blogToWidget blogFilesSorted
+  widgets <- blogEntries
+  paginationPage <- return $ if (isJust pageBackLink) || (isJust pageForwardLink)
+                                then [(Nothing, pagination pageBackLink pageForwardLink)]
+                                else []
+  return $ widgets ++ paginationPage
+  
+
+view :: HasGitit master => Maybe Int -> Maybe RevisionId -> Page -> GH master Html
+view startRequest mbrev page = do
   mbTocAndPageHtml <- wikifyAndCache page mbrev
   case mbTocAndPageHtml of
     Just (tocHierarchy, categories, htmlContents) ->
              layout page mbrev [ViewTab,EditTab,HistoryTab,DiscussTab]
                             tocHierarchy
                             categories
-                            [htmlContents]
+                            [(Just page, htmlContents)]
     Nothing -> do
          path' <- pathForFile page
          mbcont' <- getRawContents path' mbrev
@@ -421,41 +464,78 @@ view mbrev page = do
                  blog <- isBlogDirectory path'
                  case blog of
                       True -> do
-                        blogContents <- blogToHtml path'
-                        caching path' $ layoutw page mbrev [ViewTab,HistoryTab] [] [] [blogContents]
+                        blogContents <- blogToWidgets startRequest page path'
+                        caching path' $ layoutw page mbrev [] [] [] blogContents
                       False -> do
                         setMessageI (MsgNewPage page)
                         redirect $ EditR page
               Just contents
                | is_source -> do
                    htmlContents <- sourceToHtml path' contents
-                   caching path' $ layout page mbrev [ViewTab,HistoryTab] [] [] [htmlContents]
+                   caching path' $ layout page mbrev [ViewTab,HistoryTab] [] [] [(Just page, htmlContents)]
                | otherwise -> do
                   ct <- getMimeType path'
                   let content = toContent contents
                   caching path' (return (ct, content)) >>= sendResponse
                   
-layout :: HasGitit master => Page -> Maybe RevisionId -> [Tab] -> [GititToc] -> [Text] -> [Html] -> GH master Html
-layout page mbrev tabs tocHierarchy categories conts = do
-  contws <- mapM toWikiPage conts
-  layoutw page mbrev tabs tocHierarchy categories contws
+layout :: HasGitit master => Page -> Maybe RevisionId -> [Tab] -> [GititToc] -> [Text] -> [(Maybe Page, Html)] -> GH master Html
+layout parentPage mbrev tabs tocHierarchy categories conts = do
+  let toPageWikiPage (page, cont) = do 
+        contw <- toWikiPage cont
+        return (page, contw)
+  contws <- mapM toPageWikiPage conts
+  layoutw parentPage mbrev tabs tocHierarchy categories contws
   
-layoutw :: HasGitit master => Page -> Maybe RevisionId -> [Tab] -> [GititToc] -> [Text] -> [WidgetT master IO ()] -> GH master Html
-layoutw page mbrev tabs tocHierarchy categories contws = do
+layoutw :: HasGitit master => Page -> Maybe RevisionId -> [Tab] -> [GititToc] -> [Text] -> [(Maybe Page, WidgetT master IO ())] -> GH master Html
+layoutw parentPage mbrev tabs tocHierarchy categories contws = do
       toMaster <- getRouteToParent
       mbTocDepth <- toc_depth <$> getConfig
-      mbToc <- extractToc mbTocDepth (pageToText page) tocHierarchy
+      mbToc <- extractToc mbTocDepth (pageToText parentPage) tocHierarchy
       subpageTocInContent <- subpage_toc_in_content <$> getConfig
-      makePage pageLayout{ pgName = Just page
+      -- Categories/TOC is broken for multi-page pages...
+      let pagePack (page, contw) = (SinglePage
+              page
+              parentPage
+              subpageTocInContent
+              toMaster
+              categories
+              mbToc
+              mbrev
+              contw)
+      let pages = map pagePack contws
+      makePage pageLayout{ pgName = Just parentPage
                 , pgPageTools = True
                 , pgTabs = tabs
-                , pgSelectedTab = if isDiscussPage page
+                , pgSelectedTab = if isDiscussPage parentPage
                                       then DiscussTab
                                       else ViewTab }
-          (multiPageLayoutW [(SinglePage page subpageTocInContent toMaster categories mbToc mbrev (head contws))])
+          (multiPageLayoutW pages)
+          
+layoutwhead :: HasGitit master => Page -> (Route Gitit -> Route master) -> Bool -> WidgetT master IO ()
+layoutwhead parentPage toMaster subpageTocInContent = do
+      setTitle $ toMarkup (parentPage)
+      toWidget [julius|
+                  $(document).keypress(function(event) {
+                      if (event.which == 18) {
+                        $.post("@{(toMaster) (ExpireR (parentPage))}");
+                        window.location.reload(true);
+                        };
+                      });
+              |]
+      when (subpageTocInContent)
+          (void $ toWidget [julius|
+                    $(".toc-subpage-link").each(function(_index, tocSubpageLink){
+                      var jTocSubpageLink = $(tocSubpageLink);
+                      var subpageLinkIdent = jTocSubpageLink.attr("id").substr(4);
+                      $("#" + subpageLinkIdent).html(jTocSubpageLink.clone().children());
+                    });
+                  |])
+      atomLink ((toMaster) (AtomPageR (parentPage)))
+          "Atom link for this page"
 
 data SinglePage master = SinglePage {
-       path :: Page,
+       path :: Maybe Page,
+       parentPage :: Page,
        subpageTocInContent :: Bool,
        toMaster :: (Route Gitit -> Route master),
        categories :: [Text],
@@ -476,25 +556,7 @@ everyPageContents page = do
 firstPageContents :: HasGitit master => SinglePage master
                            -> WidgetT master IO ()
 firstPageContents page = do
-    setTitle $ toMarkup (path page)
-    toWidget [julius|
-                $(document).keypress(function(event) {
-                    if (event.which == 18) {
-                      $.post("@{(toMaster page) (ExpireR (path page))}");
-                      window.location.reload(true);
-                      };
-                    });
-            |]
-    when (subpageTocInContent page)
-        (void $ toWidget [julius|
-                  $(".toc-subpage-link").each(function(_index, tocSubpageLink){
-                    var jTocSubpageLink = $(tocSubpageLink);
-                    var subpageLinkIdent = jTocSubpageLink.attr("id").substr(4);
-                    $("#" + subpageLinkIdent).html(jTocSubpageLink.clone().children());
-                  });
-                |])
-    atomLink ((toMaster page) (AtomPageR (path page)))
-      "Atom link for this page"
+    layoutwhead (parentPage page) (toMaster page) (subpageTocInContent page)
     everyPageContents page
 
       
@@ -959,12 +1021,13 @@ getHistoryR start page = do
   let hist' = zip3 [(1 :: Int)..] hist histw
   toMaster <- getRouteToParent
   let pageForwardLink = if length hist > items
-                           then Just $ toMaster
-                                     $ HistoryR (start + items) page
+                           then Just (toMaster
+                                          $ HistoryR (start + items) page, [])
+                                        
                            else Nothing
   let pageBackLink    = if start > 1
-                           then Just $ toMaster
-                                     $ HistoryR (start - items) page
+                           then Just (toMaster
+                                          $ HistoryR (start - items) page, [])
                            else Nothing
   let tabs = if path == pagePath
                 then [ViewTab,EditTab,HistoryTab,DiscussTab]
@@ -1029,17 +1092,17 @@ revisionDetails linkToPageHistory rev = do
   |]
 
 pagination :: HasGitit master
-           => Maybe (Route master)    -- back link
-           -> Maybe (Route master)    -- forward link
+           => Maybe (Route master, [(Text, Text)])    -- back link
+           -> Maybe (Route master, [(Text, Text)])    -- forward link
            -> WidgetT master IO ()
 pagination pageBackLink pageForwardLink =
    [whamlet|
      <p .pagination>
        $maybe bl <- pageBackLink
-         <a href=@{bl}>&larr;
+         <a href=@?{bl}>&larr;
        &nbsp;
        $maybe fl <- pageForwardLink
-         <a href=@{fl}>&rarr;
+         <a href=@?{fl}>&rarr;
      |]
 
 getActivityR :: HasGitit master
@@ -1053,12 +1116,12 @@ getActivityR start = do
   hist' <- mapM (revisionDetails True) hist
   toMaster <- getRouteToParent
   let pageForwardLink = if length hist > items
-                           then Just $ toMaster
-                                     $ ActivityR (start + items)
+                           then Just (toMaster
+                                        $ ActivityR (start + items), [])
                            else Nothing
   let pageBackLink    = if start > 1
-                           then Just $ toMaster
-                                     $ ActivityR (start - items)
+                           then Just (toMaster
+                                        $ ActivityR (start - items), [])
                            else Nothing
   makePage pageLayout{ pgName = Nothing
                      , pgTabs = []

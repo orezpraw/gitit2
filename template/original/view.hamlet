@@ -1,4 +1,5 @@
-                         <h1 .title>#{path page}
+                         $maybe pageTitle <- path page
+                           <h1 .title>#{pageTitle}
                          $maybe toc <- mbToc page
                            <div id="TOC">^{toc}
                          $maybe rev <- mbrev page
