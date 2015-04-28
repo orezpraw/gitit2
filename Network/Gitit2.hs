@@ -94,7 +94,7 @@ getConfig = config <$> getYesod
 makeDefaultPage :: HasGitit master => PageLayout -> [WidgetT master IO ()] -> GH master Html
 makeDefaultPage layout content = do
   toMaster <- getRouteToParent
-  let logoRoute = staticR $ StaticRoute ["img","logo.png"] []
+  let logoRoute = staticR $ StaticRoute ["img","logo.svg"] []
   let feedRoute = staticR $ StaticRoute ["img","icons","feed.png"] []
   user <- maybeUser
   editorUser <- case user of
