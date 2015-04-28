@@ -1,5 +1,6 @@
                          $maybe pageTitle <- path page
-                           <h1 .title>#{pageTitle}
+                           <h1 .title>
+                              <a href=@{(toMaster page) $ ViewR pageTitle}>#{pageTitle}
                          $maybe toc <- mbToc page
                            <div id="TOC">^{toc}
                          $maybe rev <- mbrev page

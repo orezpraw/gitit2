@@ -96,7 +96,10 @@ makeDefaultPage layout content = do
   toMaster <- getRouteToParent
   let logoRoute = staticR $ StaticRoute ["img","logo.png"] []
   let feedRoute = staticR $ StaticRoute ["img","icons","feed.png"] []
-
+  user <- maybeUser
+  editorUser <- case user of
+                              Just u -> isEditor u
+                              Nothing -> return False
   let searchRoute = toMaster SearchR
   let goRoute = toMaster GoR
   let tabClass :: Tab -> Text
@@ -454,7 +457,7 @@ view startRequest mbrev page = do
   mbTocAndPageHtml <- wikifyAndCache page mbrev
   case mbTocAndPageHtml of
     Just (tocHierarchy, categories, htmlContents) ->
-             layout page mbrev [ViewTab,EditTab,HistoryTab,DiscussTab]
+             layout page mbrev True [ViewTab,EditTab,HistoryTab,DiscussTab]
                             tocHierarchy
                             categories
                             [(Just page, htmlContents)]
@@ -469,29 +472,29 @@ view startRequest mbrev page = do
                       True -> do
                         blogContents <- blogToWidgets startRequest page path'
                         -- caching path' $ 
-                        layoutw page mbrev [] [] [] blogContents
+                        layoutw page Nothing False [] [] [] blogContents
                       False -> do
                         setMessageI (MsgNewPage page)
                         redirect $ EditR page
               Just contents
                | is_source -> do
                    htmlContents <- sourceToHtml path' contents
-                   caching path' $ layout page mbrev [ViewTab,HistoryTab] [] [] [(Just page, htmlContents)]
+                   caching path' $ layout page mbrev False [ViewTab,HistoryTab] [] [] [(Just page, htmlContents)]
                | otherwise -> do
                   ct <- getMimeType path'
                   let content = toContent contents
                   caching path' (return (ct, content)) >>= sendResponse
                   
-layout :: HasGitit master => Page -> Maybe RevisionId -> [Tab] -> [GititToc] -> [Text] -> [(Maybe Page, Html)] -> GH master Html
-layout parentPage mbrev tabs tocHierarchy categories conts = do
+layout :: HasGitit master => Page -> Maybe RevisionId -> Bool -> [Tab] -> [GititToc] -> [Text] -> [(Maybe Page, Html)] -> GH master Html
+layout parentPage mbrev exportable tabs tocHierarchy categories conts = do
   let toPageWikiPage (page, cont) = do 
         contw <- toWikiPage cont
         return (page, contw)
   contws <- mapM toPageWikiPage conts
-  layoutw parentPage mbrev tabs tocHierarchy categories contws
+  layoutw parentPage mbrev exportable tabs tocHierarchy categories contws
   
-layoutw :: HasGitit master => Page -> Maybe RevisionId -> [Tab] -> [GititToc] -> [Text] -> [(Maybe Page, WidgetT master IO ())] -> GH master Html
-layoutw parentPage mbrev tabs tocHierarchy categories contws = do
+layoutw :: HasGitit master => Page -> Maybe RevisionId -> Bool -> [Tab] -> [GititToc] -> [Text] -> [(Maybe Page, WidgetT master IO ())] -> GH master Html
+layoutw parentPage mbrev exportable tabs tocHierarchy categories contws = do
       toMaster <- getRouteToParent
       mbTocDepth <- toc_depth <$> getConfig
       mbToc <- extractToc mbTocDepth (pageToText parentPage) tocHierarchy
@@ -509,6 +512,7 @@ layoutw parentPage mbrev tabs tocHierarchy categories contws = do
       let pages = map pagePack contws
       makePage pageLayout{ pgName = Just parentPage
                 , pgPageTools = True
+                , pgExport = exportable
                 , pgTabs = tabs
                 , pgSelectedTab = if isDiscussPage parentPage
                                       then DiscussTab

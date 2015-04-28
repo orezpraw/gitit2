@@ -128,12 +128,14 @@ data Tab  = ViewTab
           | HistoryTab
           | DiscussTab
           | DiffTab
+          | ExportTab
           deriving (Eq, Show)
 
 -- | Page layout.
 data PageLayout = PageLayout{
     pgName           :: Maybe Page
   , pgPageTools      :: Bool
+  , pgExport         :: Bool
   , pgSiteNav        :: Bool
   , pgTabs           :: [Tab]
   , pgSelectedTab    :: Tab
@@ -145,6 +147,7 @@ pageLayout :: PageLayout
 pageLayout = PageLayout{
     pgName           = Nothing
   , pgPageTools      = False
+  , pgExport         = False
   , pgSiteNav        = True
   , pgTabs           = []
   , pgSelectedTab    = ViewTab
