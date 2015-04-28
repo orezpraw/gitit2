@@ -5,20 +5,21 @@
         <input type="search" .form-control placeholder="_{MsgSearch}" name="patterns" id="patterns">
       <nav>
         <ul>
-          <li><a href=@{toMaster HomeR}>_{MsgFrontPage}</a>
-          <li><a href=@{toMaster IndexBaseR}>_{MsgDirectory}</a>
-          <li><a href=@{toMaster CategoriesR}>_{MsgCategories}</a>
-          <li><a href=@{toMaster RandomR}>_{MsgRandomPage}</a>
-          <li><a href=@{toMaster $ ActivityR 1}>_{MsgRecentActivity}</a>
-          <li><a href=@{toMaster UploadR}>_{MsgUploadFile}</a>
+          <li><a href=@{toMaster HomeR}>_{MsgFrontPage}
+          <li><a href=@{toMaster IndexBaseR}>_{MsgDirectory}
+          <li><a href=@{toMaster CategoriesR}>_{MsgCategories}
+          <li><a href=@{toMaster RandomR}>_{MsgRandomPage}
+          <li><a href=@{toMaster $ ActivityR 1}>_{MsgRecentActivity}
+          $if editorUser
+            <li><a href=@{toMaster UploadR}>_{MsgUploadFile}
           <li><a href=@{toMaster AtomSiteR} type="application/atom+xml" rel="alternate" title="ATOM Feed">_{MsgAtomFeed}</a>
-          <li><a href=@{toMaster HelpR}>_{MsgHelp}</a>
+          <li><a href=@{toMaster HelpR}>_{MsgHelp}
         <div #userpane>
     <main>
       <nav>
         <ul>
           $maybe page <- pgName layout
-            $if showTab EditTab
+            $if showTab EditTab && editorUser
               <li class=#{tabClass EditTab}>
                 <a href=@{toMaster $ EditR page}>_{MsgEdit}
             <li class=#{tabClass ViewTab}>
@@ -28,12 +29,14 @@
                 <a href=@{toMaster $ HistoryR 1 page}>_{MsgHistory}
             $if showTab DiscussTab
               <li class=#{tabClass DiscussTab}><a href=@{toMaster $ ViewR $ discussPageFor page}>_{MsgDiscuss}</a>
-              <li><a href=@{toMaster $ RawR page}>_{MsgRawPageSource}</a>
-            <li><a href=@{toMaster $ DeleteR page}>_{MsgDeleteThisPage}</a>
+              <li><a href=@{toMaster $ RawR page}>_{MsgRawPageSource}
+            $if (pgExport layout) && editorUser
+            <li><a href=@{toMaster $ DeleteR page}>_{MsgDeleteThisPage}
             <li><a href=@{toMaster $ AtomPageR page} type="application/atom+xml" rel="alternate" title="This page's ATOM Feed">_{MsgAtomFeed}</a>
          
       <!--<aside>
         _{MsgExport}
         -->
-      <article id=1>
-        ^{content}
+      $forall contenti <- content
+        <article>
+          ^{content}

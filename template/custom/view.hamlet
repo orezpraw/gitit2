@@ -1,12 +1,15 @@
                           <header>
-                            <h1>#{page}
-                            $maybe rev <- mbrev
+                            $maybe pageTitle <- path page
+                              <h1><a href=@{(toMaster page) $ ViewR pageTitle}>#{pageTitle}
+                            $maybe rev <- mbrev page
                               <h2>#{rev}
-                          ^{contw}
+                            $maybe toc <- mbToc page
+                              <section id="TOC">^{toc}
+                          ^{content page}
                           <footer>
-                            $if null categories
+                            $if null (categories page)
                             $else
-                              <div#categories>
+                              <section#categories>
                                 <ul>
-                                  $forall category <- categories
-                                    <li><a href=@{toMaster $ CategoryR category}>#{category}
+                                  $forall category <- categories page
+                                    <li><a href=@{(toMaster page) $ CategoryR category}>#{category}

@@ -40,7 +40,8 @@ applyPlugin wp pl = unPlugin pl wp
 -- of this typeclass.
 -- TODO: replace the user functions with isAuthorized from Yesod typeclass?
 class (Yesod master, RenderMessage master FormMessage,
-       RenderMessage master GititMessage) => HasGitit master where
+       RenderMessage master GititMessage,
+       ParseRoute master) => HasGitit master where
   -- | Return user information, if user is logged in, or nothing.
   maybeUser   :: GH master (Maybe GititUser)
   -- | Return user information or redirect to login page.
@@ -48,7 +49,7 @@ class (Yesod master, RenderMessage master FormMessage,
   -- | Return user information or redirect to login page.
   isEditor :: GititUser -> GH master Bool
   -- | Gitit subsite page layout.
-  makePage :: PageLayout -> WidgetT master IO () -> GH master Html
+  makePage :: PageLayout -> [WidgetT master IO ()] -> GH master Html
   -- | Plugins.
   getPlugins :: GH master [Plugin master]
   -- | Route for static content
@@ -127,12 +128,14 @@ data Tab  = ViewTab
           | HistoryTab
           | DiscussTab
           | DiffTab
+          | ExportTab
           deriving (Eq, Show)
 
 -- | Page layout.
 data PageLayout = PageLayout{
     pgName           :: Maybe Page
   , pgPageTools      :: Bool
+  , pgExport         :: Bool
   , pgSiteNav        :: Bool
   , pgTabs           :: [Tab]
   , pgSelectedTab    :: Tab
@@ -144,6 +147,7 @@ pageLayout :: PageLayout
 pageLayout = PageLayout{
     pgName           = Nothing
   , pgPageTools      = False
+  , pgExport         = False
   , pgSiteNav        = True
   , pgTabs           = []
   , pgSelectedTab    = ViewTab
