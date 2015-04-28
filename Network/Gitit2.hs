@@ -396,6 +396,10 @@ isBlogFileRich (r, _) = isBlogFile r
 blogCompare :: (Resource, Revision) -> (Resource, Revision) -> Ordering
 blogCompare (_, rev1) (_, rev2) = compare (revDateTime rev1) (revDateTime rev2)
 
+resourceToFilePath :: Resource -> FilePath
+resourceToFilePath (FSDirectory f) = f
+resourceToFilePath (FSFile f) = f
+
 
 blogToWidgets :: HasGitit master => Maybe Int -> Page -> FilePath -> GH master ([(Maybe Page, WidgetT master IO ())])
 blogToWidgets startRequest blogPage path = do
@@ -405,8 +409,6 @@ blogToWidgets startRequest blogPage path = do
   toMaster <- getRouteToParent
   let resourceToText (FSDirectory f, _) = T.pack f
   let resourceToText (FSFile f, _) = T.pack f
-  let resourceToFilePath (FSDirectory f) = f
-  let resourceToFilePath (FSFile f) = f
   let getRichRevision :: (Resource, Either String Revision) -> GH master (Resource, Revision)
       getRichRevision (resource, Right r) = return (resource, r)
       getRichRevision (resource, Left r) = do
@@ -418,6 +420,7 @@ blogToWidgets startRequest blogPage path = do
   let start = case startRequest of
         Just itemNumber -> itemNumber
         Nothing -> 0
+  let blogFilesDisplayed = take maxPages $ drop start blogFilesSorted
   selfRoute <- return (toMaster $ ViewR blogPage)
 --   let pageForwardLink :: HasGitit master => Maybe (Route master, [(Text, Text)])
   pageForwardLink <-
@@ -438,7 +441,7 @@ blogToWidgets startRequest blogPage path = do
               Nothing ->
                   error "Wat"
   let blogEntries :: HasGitit master => GH master ([(Maybe Page, WidgetT master IO ())])
-      blogEntries = mapM blogToWidget blogFilesSorted
+      blogEntries = mapM blogToWidget blogFilesDisplayed
   widgets <- blogEntries
   paginationPage <- return $ if (isJust pageBackLink) || (isJust pageForwardLink)
                                 then [(Nothing, pagination pageBackLink pageForwardLink)]
@@ -465,7 +468,8 @@ view startRequest mbrev page = do
                  case blog of
                       True -> do
                         blogContents <- blogToWidgets startRequest page path'
-                        caching path' $ layoutw page mbrev [] [] [] blogContents
+                        -- caching path' $ 
+                        layoutw page mbrev [] [] [] blogContents
                       False -> do
                         setMessageI (MsgNewPage page)
                         redirect $ EditR page
@@ -1155,7 +1159,21 @@ feed mbpage = do
   fs <- filestore <$> getYesod
   now <- liftIO getCurrentTime
   paths <- case mbpage of
-                Just p  -> (:[]) <$> pathForPage p
+                Just p  -> do
+                              pagePath <- pathForPage p
+                              filePath <- pathForFile p
+                              isBlog <- isBlogDirectory filePath
+                              if isBlog
+                                 then do 
+                                     resources <- liftIO (directory fs filePath)
+                                     blogFiles <- filterM isBlogFile resources
+                                     let blogFilesP = map resourceToFilePath blogFiles
+                                     let blogFilePaths = map (\x -> filePath </> x) blogFilesP
+                                     if blogFilePaths == []
+                                        then error ("Empty? " ++ filePath)
+                                        else
+                                              return blogFilePaths
+                                 else return [pagePath]
                 Nothing -> return []
   let startTime = addUTCTime (fromIntegral $ -60 * 60 * 24 * days) now
   revs <- liftIO $ history fs paths
