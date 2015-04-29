@@ -35,10 +35,10 @@
      inkscape:snap-to-guides="false"
      inkscape:snap-bbox="true"
      inkscape:snap-nodes="false"
-     inkscape:window-width="1920"
-     inkscape:window-height="1060"
-     inkscape:window-x="-3"
-     inkscape:window-y="837"
+     inkscape:window-width="1080"
+     inkscape:window-height="1865"
+     inkscape:window-x="1917"
+     inkscape:window-y="39"
      inkscape:window-maximized="1">
     <inkscape:grid
        type="xygrid"
@@ -67,16 +67,6 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      transform="translate(0,26)">
-    <g
-       id="g4332"
-       style="font-size:98.36064911px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Latin Modern Roman;-inkscape-font-specification:Latin Modern Roman"
-       transform="matrix(0,1,-1,0,0,-59.999999)">
-      <path
-         sodipodi:nodetypes="ccssssscccssccsccsscccssccsc"
-         inkscape:connector-curvature="0"
-         id="path4334"
-         d="m 63.999998,0 0,-3.049181 -2.557377,0 c -1.942621,0 -3.418029,-0.06762 -4.538418,-0.224386 -1.120389,-0.156762 -1.885758,-0.402664 -2.4083,-0.759221 -0.522541,-0.356558 -0.802255,-0.823771 -0.951333,-1.423156 -0.149079,-0.599385 -0.167522,-1.330942 -0.167522,-2.216187 l 0,-12.959015 -1e-6,-35.778691 0,-12.959016 0,-12.959015 c 0,-3.54098 0.29509,-4.622951 8.065573,-4.622951 l 2.557377,0 0,-3.04918 c -3.442619,0.295082 -11.213117,0.295082 -14.950818,0.295082 -3.836062,0 -11.60656,0 -15.04918,-0.295082 l 0,3.04918 2.557377,0 c 7.770484,0 8.065573,1.081971 8.065573,4.622951 l 0,12.959015 0,12.959016 1e-6,35.778691 0,12.959015 c 0,3.54098 -0.295089,4.62295 -8.065573,4.62295 L 34,-3.049181 34,0 c 3.44262,-0.295082 11.213118,-0.295082 14.950819,-0.295082 3.836061,0 11.60656,0 15.049179,0.295082" />
-    </g>
     <g
        transform="matrix(0,9.0000003,-9.0000003,0,-59.146367,-318.02732)"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Latin Modern Roman;-inkscape-font-specification:Latin Modern Roman"
