@@ -31,13 +31,12 @@ data Master = Master { settings :: FoundationSettings
                      , getStatic   :: Static
                      , httpManager :: HC.Manager
                      }
-mkYesod "Master" [parseRoutes|
+mkYesod "Master" [parseRoutesNoCheck|
 /static StaticR Static getStatic
-/wiki SubsiteR Gitit getGitit
 /auth AuthR Auth getAuth
 /user UserR GET
 /messages MessagesR GET
-/ RootR GET
+/ SubsiteR Gitit getGitit
 |]
 
 getRootR :: Handler ()
@@ -85,8 +84,8 @@ instance YesodAuth Master where
   type AuthId Master = Text
   getAuthId = return . Just . credsIdent
 
-  loginDest _ = RootR
-  logoutDest _ = RootR
+  loginDest _ = SubsiteR HomeR
+  logoutDest _ = SubsiteR HomeR
 
   authPlugins _ = [ authBrowserId def ]
 
