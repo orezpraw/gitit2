@@ -1,7 +1,7 @@
     <header>
       <a href=@{toMaster HomeR}><img src=@{logoRoute} alt=logo id="logo"></a>
       <form role="search" method="post" action=@{searchRoute} id="searchform">
-        <h1>Blog Template
+        <h1>Joshua Charles Campbell
         <input type="search" .form-control placeholder="_{MsgSearch}" name="patterns" id="patterns">
       <nav>
         <ul>
