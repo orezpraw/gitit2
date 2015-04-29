@@ -1,6 +1,6 @@
                           <header>
                             $maybe pageTitle <- path page
-                              <h1><a href=@{(toMaster page) $ ViewR pageTitle}>#{pageTitle}</a>
+                              <h1><a href=@{(toMaster page) $ ViewR pageTitle}>#{pageTitle}
                             $maybe rev <- mbrev page
                               <h2>#{rev}
                             <ul#categories>
