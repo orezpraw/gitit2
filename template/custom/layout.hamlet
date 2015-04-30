@@ -19,12 +19,12 @@
           $maybe page <- pgName layout
             $if showTab EditTab && editorUser
               <li class=#{tabClass EditTab}>
-                <a href=@{toMaster $ EditR page}>_{MsgEdit}</a>
+                <a href=@{toMaster $ EditR page}>_{MsgEdit}
             <!--<li class=#{tabClass ViewTab}>
               <a href=@{toMaster $ ViewR page}>_{MsgView}</a>-->
             $if showTab HistoryTab
               <li class=#{tabClass HistoryTab}>
-                <a href=@{toMaster $ HistoryR 1 page}>Page history</a>
+                <a href=@{toMaster $ HistoryR 1 page}>Page history
             $if showTab DiscussTab
               <!--<li class=#{tabClass DiscussTab}><a href=@{toMaster $ ViewR $ discussPageFor page}>_{MsgDiscuss}</a>-->
               <li><a href=@{toMaster $ RawR page}>_{MsgRawPageSource}</a>

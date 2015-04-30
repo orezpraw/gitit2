@@ -141,6 +141,11 @@ body {
   font-family: "Latin Modern", sans-serif;
   font-size: 120%;
 }
+@media all and (min-width: 100em) {
+body {
+  font-size: 150%;
+}
+}
 
 body {
     overflow-x: hidden;
@@ -263,7 +268,7 @@ main>aside {
 
 article {
     display: inline-block;
-    margin: 1em;
+/*     margin: 1em; */
     border: 30px solid transparent;
     border-image: url("/static/img/i3b.svg") 30 30 stretch;
     vertical-align: top;
@@ -271,7 +276,7 @@ article {
 
 @media all and (min-width: 60em) {
     article {
-        max-width: 42em;
+        max-width: 44em;
         width: 64%;
         min-width: 15em;
     }
@@ -279,14 +284,14 @@ article {
 
 article header {
     display: block;
-    margin: 1em;
+/*     margin: 1em; */
     border: 30px solid transparent;
     border-top: none;
     border-image: url("/static/img/i4.svg") 30 30 stretch;
 }
 
 article section {
-    margin: 1em;
+/*     margin: 1em; */
 }
 
 article section label {
@@ -356,7 +361,7 @@ blockquote {
 }
 
 p, blockquote, figure {
-    max-width: 36em;
+    max-width: 40em;
 }
 
 figure {
