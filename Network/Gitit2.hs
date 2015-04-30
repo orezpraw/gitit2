@@ -952,14 +952,14 @@ update' mbrevid page = do
               mres <- liftIO $ FS.modify fs path revid auth comm cont
               case mres of
                    Right () -> do
-                      expireCache (takeDirectory path)
+                      expireCache path
                       redirect $ ViewR page
                    Left mergeinfo -> do
                       setMessageI $ MsgMerged revid
                       edit False (mergeText mergeinfo)
                            (Just $ revId $ mergeRevision mergeinfo) page
            Nothing -> do
-             expireCache (takeDirectory path)
+             expireCache path
              liftIO $ save fs path auth comm cont
              redirect $ ViewR page
        _ -> showEditForm page route enctype widget
