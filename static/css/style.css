@@ -270,9 +270,9 @@ article {
 
 @media all and (min-width: 60em) {
     article {
-        max-width: 64em;
+        max-width: 44em;
         width: 64%;
-        min-width: 30em;
+        min-width: 16em;
     }
 }
 
@@ -355,7 +355,7 @@ blockquote {
 }
 
 p, blockquote, figure {
-    max-width: 60em;
+    max-width: 40em;
 }
 
 figure {
