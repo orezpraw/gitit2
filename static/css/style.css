@@ -436,8 +436,9 @@ body>footer nav {
 }
 
 body>header #logo {
+    height: auto;
+    width: auto;
     max-height: 8em;
-    max-width: auto;
     margin-left: 2em;
 }
 
