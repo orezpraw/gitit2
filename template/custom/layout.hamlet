@@ -7,7 +7,7 @@
         <ul>
           <li><a href=@{toMaster HomeR}>Blog</a>
           <li><a href=@{toMaster $ ViewR $ textToPage "Publications"}>Publications</a>
-          <li><a href="https://github.com/orezpraw"}>Github</a>
+          <li><a href="https://github.com/orezpraw">Github</a>
           <li><a href=@{toMaster $ ViewR $ textToPage "CV"}>CV</a>
           <li><a href=@{toMaster $ ViewR $ textToPage "Contact"}>Contact</a>
           $if editorUser
@@ -50,12 +50,12 @@
         <ul>
           <li><a href=@{toMaster HomeR}>Blog</a>
           <li><a href=@{toMaster $ ViewR $ textToPage "Publications"}>Publications</a>
-          <li><a href="https://github.com/orezpraw"}>Github</a>
+          <li><a href="https://github.com/orezpraw">Github</a>
           <li><a href=@{toMaster $ ViewR $ textToPage "CV"}>CV</a>
           <li><a href=@{toMaster $ ViewR $ textToPage "Contact"}>Contact</a>
           $if editorUser
             <li><a href=@{toMaster UploadR}>_{MsgUploadFile}</a>
-      <p>Powered by <a href="https://www.haskell.org/">Haskell</a> ∘ 
-          <a href="http://www.yesodweb.com/">Yesod</a> ∘ 
-          <a href="https://github.com/jgm/gitit2">gitit2</a> ∘ 
-          <a href="https://github.com/orezpraw/gitit2">Source</a>.
+      <p>Powered by <a href="https://www.haskell.org/">Haskell</a>
+           ∘ <a href="http://www.yesodweb.com/">Yesod</a> ∘ 
+           ∘ <a href="https://github.com/jgm/gitit2">gitit2</a> ∘ 
+           ∘ <a href="https://github.com/orezpraw/gitit2">Source</a>.
