@@ -252,7 +252,7 @@ main>aside {
     clear: right;
     min-width: 12em;
     width: 30%;
-    max-width: 16em;
+    max-width: 15em;
 }
 }
 
@@ -270,9 +270,9 @@ article {
 
 @media all and (min-width: 60em) {
     article {
-        max-width: 44em;
+        max-width: 40em;
         width: 64%;
-        min-width: 16em;
+        min-width: 15em;
     }
 }
 
@@ -355,7 +355,7 @@ blockquote {
 }
 
 p, blockquote, figure {
-    max-width: 40em;
+    max-width: 36em;
 }
 
 figure {
