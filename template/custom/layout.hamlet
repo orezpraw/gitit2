@@ -56,6 +56,6 @@
           $if editorUser
             <li><a href=@{toMaster UploadR}>_{MsgUploadFile}</a>
       <p>Powered by <a href="https://www.haskell.org/">Haskell</a>
-           ∘ <a href="http://www.yesodweb.com/">Yesod</a> ∘ 
-           ∘ <a href="https://github.com/jgm/gitit2">gitit2</a> ∘ 
+           ∘ <a href="http://www.yesodweb.com/">Yesod</a>
+           ∘ <a href="https://github.com/jgm/gitit2">gitit2</a>
            ∘ <a href="https://github.com/orezpraw/gitit2">Source</a>.
