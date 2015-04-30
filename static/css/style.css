@@ -277,6 +277,8 @@ article {
     border: 30px solid transparent;
     border-image: url("/static/img/i3b.svg") 30 30 stretch;
     vertical-align: top;
+    margin-bottom: 1em;
+    margin-top: 1em;
 }
 
 @media all and (min-width: 60em) {
