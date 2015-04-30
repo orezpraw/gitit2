@@ -436,7 +436,8 @@ body>footer nav {
 }
 
 body>header #logo {
-    max-height: 112pt;
+    max-height: 8em;
+    max-width: auto;
     margin-left: 2em;
 }
 
