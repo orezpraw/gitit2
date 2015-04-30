@@ -139,6 +139,7 @@ table {
 /* End fonts */
 body {
   font-family: "Latin Modern", sans-serif;
+  line-height: 1.25;
   font-size: 120%;
 }
 @media all and (min-width: 100em) {
@@ -164,6 +165,7 @@ body {
 code, verbatim, samp, kbd, command, var {
   font-family:  'Latin Modern Monospace', monospace;
   font-size: 91%;
+  line-height: 1.1;
 }
 
 
