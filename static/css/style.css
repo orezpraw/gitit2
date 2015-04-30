@@ -196,7 +196,7 @@ body>header nav li:after {
 }
 
 h2 {
-    font-size: 200%;
+    font-size: 150%;
 }
 
 main {
@@ -314,11 +314,11 @@ article footer {
 }
 
 article h1 {
-    font-size: 200%;
+    font-size: 175%;
 }
 
 article header h1 {
-    font-size: 250%;
+    font-size: 200%;
 }
 
 article ul {
