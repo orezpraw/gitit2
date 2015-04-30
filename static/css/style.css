@@ -254,10 +254,11 @@ main nav li:before {
 
 @media all and (min-width: 60em) {
 main>aside {
-    margin-bottom: 2em;
-    margin-right: -2em;
     float: right;
     clear: right;
+    margin-left: 0em;
+    margin-bottom: 2em;
+    margin-right: -1em;
     min-width: 12em;
     width: 15%;
     max-width: 15em;
@@ -265,7 +266,9 @@ main>aside {
 }
 
 main>aside {
-    border-bottom: 1pt solid currentColor;
+    border: 30px solid transparent;
+    border-top: none;
+/*     border-image: url("/static/img/i1.svg") 30 30 stretch; */
 }
 
 article {

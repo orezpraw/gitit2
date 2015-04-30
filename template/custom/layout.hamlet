@@ -31,10 +31,8 @@
             $if (pgExport layout) && editorUser
               <li><a href=@{toMaster $ DeleteR page}>_{MsgDeleteThisPage}</a>
             <li><a href=@{toMaster $ AtomPageR page} type="application/atom+xml" rel="alternate" title="This page's ATOM Feed">Atom feed (page)</a>
-         
-      <!--<aside>
-        _{MsgExport}
-        -->
+      <aside>
+        
       $forall contenti <- content
         <article>
           ^{contenti}
@@ -59,3 +57,4 @@
            ∘ <a href="http://www.yesodweb.com/">Yesod</a>
            ∘ <a href="https://github.com/jgm/gitit2">gitit2</a>
            ∘ <a href="https://github.com/orezpraw/gitit2">Source</a>.
+      <p>Copyright 2015 Joshua Charles Campbell.
