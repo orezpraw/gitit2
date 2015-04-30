@@ -226,6 +226,7 @@ main nav {
     margin-left: -1em;
     min-width: 12em;
     width: 15%;
+    max-width: 15em;
 }
 }
 
@@ -251,7 +252,7 @@ main>aside {
     float: right;
     clear: right;
     min-width: 12em;
-    width: 30%;
+    width: 15%;
     max-width: 15em;
 }
 }
@@ -270,7 +271,7 @@ article {
 
 @media all and (min-width: 60em) {
     article {
-        max-width: 40em;
+        max-width: 42em;
         width: 64%;
         min-width: 15em;
     }
