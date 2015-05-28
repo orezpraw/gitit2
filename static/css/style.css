@@ -450,3 +450,7 @@ body>header #logo {
 footer ul {
     display: inline-block;
 }
+
+em {
+    font-style: italic;
+}
